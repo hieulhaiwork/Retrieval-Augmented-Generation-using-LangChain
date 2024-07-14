@@ -79,6 +79,6 @@ def qachatbot(question):
 
     llm_chain = create_chain(prompt, llm, db)
 
-    question = "Bao giờ thì thí sinh lớp 12 năm học 2022-2023, thử đăng ký dự thi trực tuyến trên Hệ thống QLT?"
+    question = "Who is the author of this paper?"
     response = llm_chain.invoke({"query": question})
     print(response['result'])
