@@ -1,24 +1,34 @@
 import os
 import shutil
-from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFLoader
+import argparse
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-# Load environment variables. Assumes that project contains .env file with API keys
-load_dotenv()
-
-DATA_PATH = r"data/paper1.pdf"
-CHROMA_PATH = r"chroma"
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+#--------------------------------------------------------------------
+parser = argparse.ArgumentParser(description="Create the vector database for your document")
+parser.add_argument("--data", type=str, default="./data/paper1.pdf", help="Path to your document")
+parser.add_argument("--chroma_path", type=str, default="./chroma", help="Path to save your vector database")
+parser.add_argument("--GOOGLE_API_KEY", type=str, default="YOUR_GEMINI_API_KEY", help="Your Gemini API Key")
+args = parser.parse_args()
+if args.GOOGLE_API_KEY != "YOUR_GEMINI_API_KEY":
+    pass
+else:
+    raise ValueError("Please enter your Gemini API Key.")
 
 #--------------------------------------------------------------------
 
 #Load pdf file
 def load_documents():
-    loader = PyPDFLoader(DATA_PATH)
-    pages = loader.load_and_split()
+    if args.data.split("/")[-1].endswith('pdf'):
+        loader = PyPDFLoader(args.data)
+        pages = loader.load_and_split()
+    elif args.data.split("/")[-1].endswith('txt'):
+        loader = TextLoader(args.data, encoding='utf8')
+        pages = loader.load()
+    else:
+        ValueError("Only support for .pdf or .txt, please replace for file.")
     return pages
 
 #Split chunks
@@ -37,18 +47,18 @@ def text_split(documents):
 # Initialize Chroma database
 def initialize_database(chunks):
 
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
+    if os.path.exists(args.chroma_path):
+        shutil.rmtree(args.chroma_path)
 
-    embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key = GOOGLE_API_KEY)
+    embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key = args.GOOGLE_API_KEY)
 
     vectordb = Chroma.from_documents(
         chunks, 
         embedding_model,
         collection_name = "gemini_collection",
-        persist_directory = CHROMA_PATH
+        persist_directory = args.chroma_path
     )
-    print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
+    print(f"Saved {len(chunks)} chunks to {args.chroma_path}.")
     return vectordb
 
 # Generate vector database from documents

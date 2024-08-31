@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv
+import argparse
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from google.generativeai.types.safety_types import HarmBlockThreshold, HarmCategory
@@ -7,20 +7,23 @@ from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import RetrievalQA
 from langchain_chroma import Chroma
-from vector_database import vectordb
+from vector_database import args
 
+#-----------------------------------------------------------
+parser = argparse.ArgumentParser(description="Initilize variables for chain")
+parser.add_argument("--chroma_path", type=str, default="./chroma", help="Path to save your vector database")
+parser.add_argument("--GOOGLE_API_KEY", type=str, default="YOUR_GEMINI_API_KEY", help="Your Gemini API Key")
+args = parser.parse_args()
+if args.GOOGLE_API_KEY != "YOUR_GEMINI_API_KEY":
+    pass
+else:
+    raise ValueError("Please enter your Gemini API Key.")
 
-
-# Load environment variables. Assumes that project contains .env file with API keys
-load_dotenv()
-
-CHROMA_PATH = r"chroma"
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
+#-----------------------------------------------------------
 def initialize_llm():
     llm = ChatGoogleGenerativeAI(
         model = "gemini-1.5-pro",
-        google_api_key= GOOGLE_API_KEY,
+        google_api_key= args.GOOGLE_API_KEY,
         temperature= 0.01,
         max_output_tokens=100,
         safety_settings = {
@@ -51,8 +54,8 @@ def create_prompt():
     return prompt
 
 def read_vector_db():
-    embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key = GOOGLE_API_KEY)
-    vectordb = Chroma(persist_directory=CHROMA_PATH, 
+    embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key = args.GOOGLE_API_KEY)
+    vectordb = Chroma(persist_directory=args.chroma_path, 
                         embedding_function=embeddings_model,
                         collection_name="gemini_collection")
     #db = VectorStoreRetriever(vectorstore=vectordb)
@@ -78,7 +81,9 @@ def qachatbot(question):
     prompt = create_prompt()
 
     llm_chain = create_chain(prompt, llm, db)
-
-    question = "Who is the author of this paper?"
     response = llm_chain.invoke({"query": question})
     print(response['result'])
+
+
+# Short test
+print(qachatbot(input("Input for question: ")))

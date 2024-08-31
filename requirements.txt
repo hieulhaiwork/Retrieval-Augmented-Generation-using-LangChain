@@ -6,8 +6,3 @@ langchain_google_genai
 python-dotenv==1.0.1
 chromadb
 tf-keras
-gradio
-
-# Only for test.py
-sentence_transformer
-langchain_text_splitters
