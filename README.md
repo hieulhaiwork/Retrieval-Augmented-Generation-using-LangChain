@@ -12,6 +12,9 @@ pip install -r requirements.txt
 
 3. Finally, run `main.py`
 
+### Review results
+![](![image](https://github.com/user-attachments/assets/da9de9f4-5345-43b7-bc63-d5cef3a1a7c6))
+
 
 
 
