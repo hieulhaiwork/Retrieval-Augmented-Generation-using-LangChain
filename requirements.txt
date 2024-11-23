@@ -1,8 +1,10 @@
-langchain==0.1.6
-langchain-community==0.0.19
-langchain-core==0.1.23
-unstructured==0.14.10
+numpy
+langchain
+langchain-community
+langchain-core
+langchain-chroma
+unstructured
 langchain_google_genai
-python-dotenv==1.0.1
+python-dotenv
 chromadb
 tf-keras
